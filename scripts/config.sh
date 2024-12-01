@@ -29,4 +29,18 @@ for table_file in "$CONFIG_DIR"/tables/*.sql; do
   fi
 done
 
+for function_file in "$CONFIG_DIR"/functions*.sql; do
+  [ -e "$function_file" ] || continue
+
+  echo "Applying config file: ${function_file}"
+
+ PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f "$function_file"
+
+  if [ $? -eq 0 ]; then
+    echo "Configuration file applied: ${function_file}"
+  else
+    echo "Configuration file not applied: ${function_file}"
+  fi 
+done
+
 echo "All configurations have been applied"
