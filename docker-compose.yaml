@@ -14,7 +14,8 @@ services:
       - db
   db:
     build: postgres
-    volumes: 
+    volumes:
+      - ./postgres:/config/postgres 
       - ./.db-data:/var/lib/postgresql/data
     env_file:
       - ".env.db"
