@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    depends_on:
+      - db
+    env_file:
+      - .env.dev
+  db:
+    image: postgres:latest
+    env_file:
+      - ".env.db"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "app", "-d", "lopiccolo"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  config:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./postgres:/config/postgres
+    env_file:
+      - ".env.db"
+    entrypoint: ["sh", "/config/config.sh"]
