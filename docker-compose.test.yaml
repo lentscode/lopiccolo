@@ -6,11 +6,14 @@ services:
     depends_on:
       - db
     env_file:
-      - .env.dev
+      - .env.db
+    volumes:
+      - /app/node_modules
+      - ./:/app
   db:
     image: postgres:latest
     env_file:
-      - ".env.db"
+      - .env.db
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "app", "-d", "lopiccolo"]
       interval: 5s
@@ -27,5 +30,5 @@ services:
     volumes:
       - ./postgres:/config/postgres
     env_file:
-      - ".env.db"
+      - .env.db
     entrypoint: ["sh", "/config/config.sh"]

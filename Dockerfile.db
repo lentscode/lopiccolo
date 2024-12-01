@@ -2,7 +2,7 @@ FROM postgres:alpine
 
 WORKDIR /config
 
-COPY ./scripts/config.sh /config
+COPY scripts/config.sh /config
 
 RUN apk add --no-cache bash
 
