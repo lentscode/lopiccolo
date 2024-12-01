@@ -47,7 +47,14 @@ export async function signUp(
 	email: string,
 	password: string,
 	confirmPassword: string
-) {
+): Promise<
+	| {
+			emailError?: string;
+			passwordError?: string;
+			confirmPasswordError?: string;
+	  }
+	| { email: string; id: number }
+> {
 	const emailError = validateEmail(email);
 	const passwordError = validatePassword(password);
 
@@ -55,13 +62,11 @@ export async function signUp(
 		return {
 			emailError,
 			passwordError,
-			confirmPassword: null,
 		};
 	}
 
 	if (password !== confirmPassword) {
 		return {
-			emailError: null,
 			passwordError: "no match",
 			confirmPasswordError: "no match",
 		};
@@ -77,7 +82,6 @@ export async function signUp(
 		return {
 			emailError: "invalid",
 			passwordError: "invalid",
-			confirmPasswordError: null,
 		};
 	}
 
@@ -93,7 +97,6 @@ function validateEmail(email: string) {
 	if (email.length === 0 || email.includes("@")) {
 		return "invalid";
 	}
-	return null;
 }
 
 function validatePassword(password: string) {
@@ -105,7 +108,6 @@ function validatePassword(password: string) {
 	) {
 		return "invalid";
 	}
-	return null;
 }
 
 async function hashPassword(password: string) {
