@@ -94,7 +94,7 @@ export async function signUp(
 }
 
 function validateEmail(email: string) {
-	if (email.length === 0 || email.includes("@")) {
+	if (email.length === 0 || !email.includes("@")) {
 		return "invalid";
 	}
 }
@@ -102,7 +102,7 @@ function validateEmail(email: string) {
 function validatePassword(password: string) {
 	if (
 		password.length === 0 ||
-		password.match(
+		!password.match(
 			/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/
 		)
 	) {
