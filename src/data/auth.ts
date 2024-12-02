@@ -1,11 +1,13 @@
 import db from "@/config/db";
 import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
-import { Sql } from "postgres";
+import { Pool } from "pg";
 
 let sessions: string[] = [];
 
-export async function login(email: string, password: string, sql: Sql = db) {
+export async function login(email: string, password: string, pool: Pool = db) {
+	const sql = await pool.connect();
+
 	if (!email || !password) {
 		return {
 			emailError: "wrong",
@@ -13,24 +15,22 @@ export async function login(email: string, password: string, sql: Sql = db) {
 		};
 	}
 
-	const [res]: [
-		{
-			id: number;
-			email: string;
-			hash_password: string;
-		}?
-	] = await sql`
-    SELECT * FROM login(${email})
-  `;
+	const res = await sql.query("SELECT * FROM login($1)", [email]);
 
-	if (!res) {
+	if (!res || res.rowCount !== 1) {
 		return {
 			emailError: "wrong",
 			passwordError: "wrong",
 		};
 	}
 
-	const passwordCorrect = await checkPassword(password, res.hash_password);
+	const data: {
+		id: string;
+		email: string;
+		hash_password: string;
+	} = res.rows[0];
+
+	const passwordCorrect = await checkPassword(password, data.hash_password);
 
 	if (!passwordCorrect) {
 		return {
@@ -42,10 +42,12 @@ export async function login(email: string, password: string, sql: Sql = db) {
 	const sessionId = createSessionId();
 
 	const user = {
-		email: res.email,
-		id: res.id,
+		email: data.email,
+		id: parseInt(data.id),
 		sessionId,
 	};
+
+	sql.release();
 
 	return user;
 }
@@ -54,7 +56,7 @@ export async function signUp(
 	email: string,
 	password: string,
 	confirmPassword: string,
-	sql: Sql = db
+	pool: Pool = db
 ): Promise<
 	| {
 			emailError?: string;
@@ -82,29 +84,34 @@ export async function signUp(
 
 	const hashedPassword = await hashPassword(password);
 
-	const [res]: [
-		{
-			email: string;
-			id: string;
-		}?
-	] = await sql`
-    SELECT * FROM signup(${email}, ${hashedPassword})
-  `;
+	const sql = await pool.connect();
 
-	if (!res) {
+	const res = await sql.query("SELECT * FROM signup($1, $2)", [
+		email,
+		hashedPassword,
+	]);
+
+	if (!res || res.rowCount !== 1) {
 		return {
 			emailError: "invalid",
 			passwordError: "invalid",
 		};
 	}
 
+	const data: {
+		email: string;
+		id: string;
+	} = res.rows[0];
+
 	const sessionId = createSessionId();
 
 	const user = {
-		email: res.email,
-		id: parseInt(res.id),
+		email: data.email,
+		id: parseInt(data.id),
 		sessionId,
 	};
+
+	sql.release();
 
 	return user;
 }

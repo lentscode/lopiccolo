@@ -1,6 +1,8 @@
-import postgres from "postgres";
+import pg from "pg"
+
+const {Pool} = pg
 
 //TODO: IMPLEMENT
-const db = postgres({});
+const db = new Pool()
 
 export default db;
