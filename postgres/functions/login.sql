@@ -8,9 +8,10 @@ RETURNS TABLE (
 )
 AS $$
   BEGIN
-    SELECT id, email, hash_password
-    FROM users
-    WHERE email = _email;
+    RETURN QUERY
+    SELECT u.id, u.email, u.hash_password
+    FROM users AS u
+    WHERE u.email = _email;
   END
 $$
 LANGUAGE plpgsql;
