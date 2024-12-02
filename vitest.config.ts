@@ -6,6 +6,6 @@ export default defineConfig({
 	plugins: [react(), tsconfigPaths()],
 	test: {
 		environment: "jsdom",
-		disableConsoleIntercept: true
+		disableConsoleIntercept: true,
 	},
 });
