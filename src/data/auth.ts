@@ -1,8 +1,11 @@
-import sql from "@/config/db";
+import db from "@/config/db";
 import bcrypt from "bcrypt";
+import { randomUUID } from "crypto";
 import { Sql } from "postgres";
 
-export async function login(email: string, password: string) {
+let sessions: string[] = [];
+
+export async function login(email: string, password: string, sql: Sql = db) {
 	if (!email || !password) {
 		return {
 			emailError: "wrong",
@@ -14,10 +17,10 @@ export async function login(email: string, password: string) {
 		{
 			id: number;
 			email: string;
-			hashPassword: string;
+			hash_password: string;
 		}?
 	] = await sql`
-    SELECT login(${email})
+    SELECT * FROM login(${email})
   `;
 
 	if (!res) {
@@ -27,7 +30,7 @@ export async function login(email: string, password: string) {
 		};
 	}
 
-	const passwordCorrect = await checkPassword(password, res.hashPassword);
+	const passwordCorrect = await checkPassword(password, res.hash_password);
 
 	if (!passwordCorrect) {
 		return {
@@ -36,19 +39,22 @@ export async function login(email: string, password: string) {
 		};
 	}
 
+	const sessionId = createSessionId();
+
 	const user = {
-		email,
+		email: res.email,
 		id: res.id,
+		sessionId,
 	};
 
 	return user;
 }
 
 export async function signUp(
-	sql: Sql,
 	email: string,
 	password: string,
-	confirmPassword: string
+	confirmPassword: string,
+	sql: Sql = db
 ): Promise<
 	| {
 			emailError?: string;
@@ -92,12 +98,29 @@ export async function signUp(
 		};
 	}
 
+	const sessionId = createSessionId();
+
 	const user = {
 		email: res.email,
 		id: parseInt(res.id),
+		sessionId,
 	};
 
 	return user;
+}
+
+export function checkSessionId(sessionId: string, sessions: string[]) {
+	return sessions.includes(sessionId);
+}
+
+function createSessionId() {
+	return randomUUID();
+}
+
+function addSessionId(sessionId: string, sessions: string[]) {
+	const newSessions = [...sessions, sessionId];
+
+	return newSessions;
 }
 
 function validateEmail(email: string) {

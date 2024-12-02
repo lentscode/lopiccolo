@@ -1,10 +1,6 @@
 import postgres from "postgres";
 
 //TODO: IMPLEMENT
-const sql = postgres({});
+const db = postgres({});
 
-export default sql;
-
-export interface Id {
-  id: number
-}
+export default db;
