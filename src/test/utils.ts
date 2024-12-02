@@ -1,8 +1,8 @@
-import postgres, { Sql } from "postgres";
+import { Pool } from "pg";
 
 export function createTestDb() {
-	const sql = postgres({
-		db: process.env.POSTGRES_DB,
+	const sql = new Pool({
+    database: process.env.POSTGRES_DB,
 		host: process.env.POSTGRES_HOST,
 		password: process.env.POSTGRES_PASSWORD,
 		user: process.env.POSTGRES_USER,
@@ -11,8 +11,8 @@ export function createTestDb() {
 	return sql;
 }
 
-export async function clearDb(db: Sql) {
-	await db`
+export async function clearDb(db: Pool) {
+	await db.query(`
     DO $$ DECLARE
       table_name text;
     BEGIN
@@ -20,5 +20,5 @@ export async function clearDb(db: Sql) {
         EXECUTE 'TRUNCATE TABLE ' || table_name || ' CASCADE;';
       END LOOP;
     END $$;
-  `;
+  `);
 }
