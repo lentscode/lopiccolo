@@ -4,7 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile.test
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     env_file:
       - .env.db
     volumes:
