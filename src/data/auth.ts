@@ -1,5 +1,6 @@
-import sql, { Id } from "@/config/db";
+import sql from "@/config/db";
 import bcrypt from "bcrypt";
+import { Sql } from "postgres";
 
 export async function login(email: string, password: string) {
 	if (!email || !password) {
@@ -44,6 +45,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function signUp(
+	sql: Sql,
 	email: string,
 	password: string,
 	confirmPassword: string
@@ -74,8 +76,13 @@ export async function signUp(
 
 	const hashedPassword = await hashPassword(password);
 
-	const [res]: [Id?] = await sql`
-    SELECT signup(${email}, ${hashedPassword})
+	const [res]: [
+		{
+			email: string;
+			id: string;
+		}?
+	] = await sql`
+    SELECT * FROM signup(${email}, ${hashedPassword})
   `;
 
 	if (!res) {
@@ -86,8 +93,8 @@ export async function signUp(
 	}
 
 	const user = {
-		email,
-		id: res.id,
+		email: res.email,
+		id: parseInt(res.id),
 	};
 
 	return user;
