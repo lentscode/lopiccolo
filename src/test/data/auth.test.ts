@@ -1,16 +1,11 @@
-import { Pool } from "pg";
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import pool from "@/config/db";
+import { afterEach, describe, expect, test } from "vitest";
 import { login, signUp } from "../../data/auth";
-import { clearDb, createTestDb } from "../utils";
+import { clearDb } from "../utils";
 
 describe("auth", () => {
-	let pool: Pool;
 	const email = "email@example.com";
 	const password = "password1!";
-
-	beforeAll(() => {
-		pool = createTestDb();
-	});
 
 	afterEach(async () => {
 		await clearDb(pool);
@@ -18,7 +13,7 @@ describe("auth", () => {
 
 	describe("signup", () => {
 		test("sign up returns email and id", async () => {
-			const result = await signUp(email, password, password, pool);
+			const result = await signUp(email, password, password);
 
 			expect(result).toHaveProperty("email");
 			expect(result).toHaveProperty("sessionId");
@@ -42,12 +37,12 @@ describe("auth", () => {
 				[data.id]
 			);
 
-			expect(res.rowCount).toBe(1)
+			expect(res.rowCount).toBe(1);
 
 			const user: {
-				email: string,
-				hash_password: string
-			} = res.rows[0]
+				email: string;
+				hash_password: string;
+			} = res.rows[0];
 
 			expect(user).not.toBeNull();
 
@@ -62,8 +57,7 @@ describe("auth", () => {
 			const result = await signUp(
 				"email.example.com",
 				password,
-				password,
-				pool
+				password
 			);
 
 			expect(result).toHaveProperty("emailError");
@@ -76,7 +70,7 @@ describe("auth", () => {
 		});
 
 		test("password does not have requirements", async () => {
-			const result = await signUp(email, "password", "password", pool);
+			const result = await signUp(email, "password", "password");
 
 			expect(result).toHaveProperty("passwordError");
 
@@ -88,12 +82,7 @@ describe("auth", () => {
 		});
 
 		test("password and confirm password not equal", async () => {
-			const result = await signUp(
-				email,
-				"password1!",
-				"password2!",
-				pool
-			);
+			const result = await signUp(email, "password1!", "password2!");
 
 			expect(result).toHaveProperty("passwordError");
 			expect(result).toHaveProperty("confirmPasswordError");
@@ -108,19 +97,19 @@ describe("auth", () => {
 		});
 
 		test("sign up fails because email is taken", async () => {
-			await signUp(email, password, password, pool);
+			await signUp(email, password, password);
 
 			await expect(() =>
-				signUp(email, password, password, pool)
+				signUp(email, password, password)
 			).rejects.toThrow();
 		});
 	});
 
 	describe("login", () => {
 		test("should return email and id of user", async () => {
-			await signUp(email, password, password, pool);
+			await signUp(email, password, password);
 
-			const result = await login(email, password, pool);
+			const result = await login(email, password);
 
 			expect(result).toHaveProperty("email");
 			expect(result).toHaveProperty("id");
@@ -136,9 +125,9 @@ describe("auth", () => {
 		});
 
 		test("user not found, should return an error object", async () => {
-			await signUp(email, password, password, pool);
+			await signUp(email, password, password);
 
-			const result = await login("email@example.it", password, pool);
+			const result = await login("email@example.it", password);
 
 			expect(result).toHaveProperty("emailError");
 			expect(result).toHaveProperty("passwordError");
@@ -153,9 +142,9 @@ describe("auth", () => {
 		});
 
 		test("wrong password, should return an error object", async () => {
-			await signUp(email, password, password, pool);
+			await signUp(email, password, password);
 
-			const result = await login(email, "password", pool);
+			const result = await login(email, "password");
 
 			expect(result).toHaveProperty("emailError");
 			expect(result).toHaveProperty("passwordError");

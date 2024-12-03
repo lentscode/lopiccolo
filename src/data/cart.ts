@@ -1,8 +1,7 @@
-import db from "@/config/db";
+import pool from "@/config/db";
 import { Cart } from "@/models/cart";
-import { Pool } from "pg";
 
-export async function getCartOfUser(userId: number, pool: Pool = db) {
+export async function getCartOfUser(userId: number) {
 	const conn = await pool.connect();
 
 	const res = await conn.query("SELECT * FROM get_cart_of_user($1)", [
@@ -16,6 +15,8 @@ export async function getCartOfUser(userId: number, pool: Pool = db) {
 	}
 
 	const cart: Cart = res.rows[0];
+
+	conn.release()
 
 	return cart;
 }

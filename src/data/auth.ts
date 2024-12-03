@@ -1,11 +1,11 @@
-import db from "@/config/db";
+import pool from "@/config/db";
 import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 import { Pool } from "pg";
 
 let sessions: string[] = [];
 
-export async function login(email: string, password: string, pool: Pool = db) {
+export async function login(email: string, password: string) {
 	const sql = await pool.connect();
 
 	if (!email || !password) {
@@ -56,7 +56,6 @@ export async function signUp(
 	email: string,
 	password: string,
 	confirmPassword: string,
-	pool: Pool = db
 ): Promise<
 	| {
 			emailError?: string;
