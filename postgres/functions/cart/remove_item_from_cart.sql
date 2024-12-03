@@ -2,6 +2,7 @@ CREATE OR REPLACE FUNCTION remove_item_from_cart (
   _user_id BIGINT,
   _product_id BIGINT
 )
+RETURNS VOID
 AS $$
   BEGIN
     DELETE FROM cart_items
@@ -10,7 +11,8 @@ AS $$
       SELECT c.id FROM carts c
       WHERE c.user_id = _user_id
       ORDER BY c.created_at DESC
-      LIMIT 1;
-    )
+      LIMIT 1
+    );
   END
+$$
 LANGUAGE plpgsql;

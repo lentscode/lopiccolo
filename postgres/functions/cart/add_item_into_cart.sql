@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION add_item_into_cart (
   _product_id BIGINT,
   _quantity INTEGER
 )
+RETURNS VOID
 AS $$
   BEGIN
     INSERT INTO cart_items 
@@ -13,4 +14,5 @@ AS $$
     ORDER BY c.created_at DESC
     LIMIT 1;
   END
+$$
 LANGUAGE plpgsql;

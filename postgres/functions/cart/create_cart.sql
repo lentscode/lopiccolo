@@ -9,10 +9,10 @@ RETURNS TABLE (
 AS $$
   BEGIN
     RETURN QUERY
-    INSERT INTO carts c
-    (c.user_id)
+    INSERT INTO carts
+    (user_id)
     VALUES (_user_id)
-    RETURNING c.id, c.created_at, c.updated_at
+    RETURNING carts.id, carts.created_at, carts.updated_at;
   END
 $$
 LANGUAGE plpgsql;

@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION edit_item_of_cart (
   _product_id BIGINT,
   _quantity INTEGER
 )
+RETURNS VOID
 AS $$
   BEGIN
     UPDATE cart_items
@@ -12,7 +13,8 @@ AS $$
       SELECT c.id FROM carts c
       WHERE c.user_id = _user_id
       ORDER BY c.created_at DESC
-      LIMIT 1;
-    )
+      LIMIT 1
+    );
   END
+$$
 LANGUAGE plpgsql;
