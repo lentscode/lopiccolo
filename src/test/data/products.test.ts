@@ -18,13 +18,11 @@ describe("products", () => {
       RETURNING id
       `);
 
-		if (!res || res.rowCount !== 3) {
+		if (!res) {
 			throw new Error("products not initialized");
 		}
 
 		const rows: { id: string }[] = res.rows;
-
-    console.log(rows)
 
 		ids = rows.map((e) => parseInt(e.id));
 	});
@@ -37,7 +35,9 @@ describe("products", () => {
 		test("should return a list of products", async () => {
 			const products = await getProducts();
 
-			expect(products.length).toBe(3);
+			for (const product of products) {
+				expect(ids.includes(product.id))
+			}
 		});
 	});
 

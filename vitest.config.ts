@@ -7,5 +7,6 @@ export default defineConfig({
 	test: {
 		environment: "jsdom",
 		disableConsoleIntercept: true,
+		fileParallelism: false
 	},
 });
