@@ -57,4 +57,18 @@ for function_file in $(find "$CONFIG_DIR/functions" -type f -name "*.sql"); do
   fi 
 done
 
+for query_file in $(find "$CONFIG_DIR/queries" -type f -name "*.sql"); do
+  [ -e "$query_file" ] || continue
+
+  echo "Applying config file: ${query_file}"
+
+  PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f "$query_file"
+
+  if [ $? -eq 0 ]; then
+    echo "Configuration file applied: ${query_file}"
+  else
+    echo "Configuration file not applied: ${query_file}"
+  fi 
+done
+
 echo "All configurations have been applied"
