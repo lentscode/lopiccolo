@@ -15,6 +15,20 @@ if [ ! -d "$CONFIG_DIR" ]; then
   exit 1
 fi
 
+for type_file in "$CONFIG_DIR"/types/*.sql; do
+  [ -e "$type_file" ] || continue
+
+  echo "Applying config file: ${type_file}"
+
+  PGPASSWORD="$POSTGRES_PASSWORD" psql -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f "$type_file"
+
+  if [ $? -eq 0 ]; then
+    echo "Configuration file applied: ${type_file}"
+  else
+    echo "Configuration file not applied: ${type_file}"
+  fi
+done
+
 for table_file in "$CONFIG_DIR"/tables/*.sql; do
   [ -e "$table_file" ] || continue
 
