@@ -1,7 +1,6 @@
 import pool from "@/config/db";
 import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
-import { Pool } from "pg";
 
 let sessions: string[] = [];
 
@@ -15,47 +14,54 @@ export async function login(email: string, password: string) {
 		};
 	}
 
-	const res = await sql.query("SELECT * FROM login($1)", [email]);
+	try {
+		const res = await sql.query("SELECT * FROM login($1)", [email]);
 
-	if (!res || res.rowCount !== 1) {
-		return {
-			emailError: "wrong",
-			passwordError: "wrong",
+		if (!res || res.rowCount !== 1) {
+			return {
+				emailError: "wrong",
+				passwordError: "wrong",
+			};
+		}
+
+		const data: {
+			id: string;
+			email: string;
+			hash_password: string;
+		} = res.rows[0];
+
+		const passwordCorrect = await checkPassword(
+			password,
+			data.hash_password
+		);
+
+		if (!passwordCorrect) {
+			return {
+				emailError: "wrong",
+				passwordError: "wrong",
+			};
+		}
+
+		const sessionId = createSessionId();
+
+		const user = {
+			email: data.email,
+			id: parseInt(data.id),
+			sessionId,
 		};
+
+		return user;
+	} catch (error) {
+		throw error;
+	} finally {
+		sql.release();
 	}
-
-	const data: {
-		id: string;
-		email: string;
-		hash_password: string;
-	} = res.rows[0];
-
-	const passwordCorrect = await checkPassword(password, data.hash_password);
-
-	if (!passwordCorrect) {
-		return {
-			emailError: "wrong",
-			passwordError: "wrong",
-		};
-	}
-
-	const sessionId = createSessionId();
-
-	const user = {
-		email: data.email,
-		id: parseInt(data.id),
-		sessionId,
-	};
-
-	sql.release();
-
-	return user;
 }
 
 export async function signUp(
 	email: string,
 	password: string,
-	confirmPassword: string,
+	confirmPassword: string
 ): Promise<
 	| {
 			emailError?: string;
@@ -85,34 +91,38 @@ export async function signUp(
 
 	const sql = await pool.connect();
 
-	const res = await sql.query("SELECT * FROM signup($1, $2)", [
-		email,
-		hashedPassword,
-	]);
+	try {
+		const res = await sql.query("SELECT * FROM signup($1, $2)", [
+			email,
+			hashedPassword,
+		]);
 
-	if (!res || res.rowCount !== 1) {
-		return {
-			emailError: "invalid",
-			passwordError: "invalid",
+		if (!res || res.rowCount !== 1) {
+			return {
+				emailError: "invalid",
+				passwordError: "invalid",
+			};
+		}
+
+		const data: {
+			email: string;
+			id: string;
+		} = res.rows[0];
+
+		const sessionId = createSessionId();
+
+		const user = {
+			email: data.email,
+			id: parseInt(data.id),
+			sessionId,
 		};
+
+		return user;
+	} catch (error) {
+		throw error;
+	} finally {
+		sql.release();
 	}
-
-	const data: {
-		email: string;
-		id: string;
-	} = res.rows[0];
-
-	const sessionId = createSessionId();
-
-	const user = {
-		email: data.email,
-		id: parseInt(data.id),
-		sessionId,
-	};
-
-	sql.release();
-
-	return user;
 }
 
 export function checkSessionId(sessionId: string, sessions: string[]) {
