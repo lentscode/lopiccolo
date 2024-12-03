@@ -13,7 +13,7 @@ describe("cart", () => {
       VALUES($1, $2)
       RETURNING id
       `,
-			["email@example.com", "password"]
+			["email@google.com", "password"]
 		);
 
 		if (!res || res.rowCount !== 1) {
