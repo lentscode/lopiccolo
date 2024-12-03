@@ -6,6 +6,10 @@ CREATE OR REPLACE FUNCTION add_item_into_cart (
 RETURNS VOID
 AS $$
   BEGIN
+    IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
+      RAISE EXCEPTION 'User with id: % not found', _user_id;
+    END IF; 
+
     INSERT INTO cart_items 
     (cart_id, product_id, quantity)
     SELECT c.id, _product_id, _quantity
