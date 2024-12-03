@@ -1,6 +1,30 @@
 import pool from "@/config/db";
 import { Cart } from "@/models/cart";
 
+export async function createCart(userId: number) {
+	const conn = await pool.connect();
+
+	const res = await conn.query("SELECT * FROM create_cart($1)", [userId]);
+
+	if (!res || res.rowCount !== 1) {
+		conn.release();
+
+		throw new Error("cart not created");
+	}
+
+	const cartInfo: {
+		id: string;
+		created_at: Date;
+		updated_at: Date;
+	} = res.rows[0];
+
+	return {
+		id: parseInt(cartInfo.id),
+		createdAt: cartInfo.created_at,
+		updatedAt: cartInfo.updated_at,
+	};
+}
+
 export async function getCartOfUser(userId: number) {
 	const conn = await pool.connect();
 
@@ -16,7 +40,50 @@ export async function getCartOfUser(userId: number) {
 
 	const cart: Cart = res.rows[0];
 
-	conn.release()
+	conn.release();
 
 	return cart;
+}
+
+export async function addItemToCart(
+	userId: number,
+	productId: number,
+	quantity: number
+) {
+	const conn = await pool.connect();
+
+	await conn.query("SELECT add_item_to_cart($1, $2, $3)", [
+		userId,
+		productId,
+		quantity,
+	]);
+
+	conn.release();
+}
+
+export async function editItemOfCart(
+	userId: number,
+	productId: number,
+	quantity: number
+) {
+	const conn = await pool.connect();
+
+	await conn.query("SELECT edit_item_of_cart($1, $2, $3)", [
+		userId,
+		productId,
+		quantity,
+	]);
+
+	conn.release();
+}
+
+export async function removeItemFromCart(userId: number, productId: number) {
+	const conn = await pool.connect();
+
+	await conn.query("SELECT remove_item_from_cart($1, $2)", [
+		userId,
+		productId,
+	]);
+
+	conn.release();
 }
