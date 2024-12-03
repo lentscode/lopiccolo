@@ -35,7 +35,7 @@ AS $$
 
     IF cart IS NULL THEN
       RAISE EXCEPTION 'Cart for user with id: % not found', _user_id;
-    ENDIF;
+    END IF;
 
     RETURN cart;
   END
