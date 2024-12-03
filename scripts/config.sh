@@ -43,7 +43,7 @@ for table_file in "$CONFIG_DIR"/tables/*.sql; do
   fi
 done
 
-for function_file in "$CONFIG_DIR"/functions/*.sql; do
+for function_file in $(find "$CONFIG_DIR/functions" -type f -name "*.sql"); do
   [ -e "$function_file" ] || continue
 
   echo "Applying config file: ${function_file}"
